@@ -1,9 +1,9 @@
+// routes/aiRoutes.js
 import express from "express";
-import { generateAIResume } from "../controllers/aiController.js";
+import { generateResume } from "../controllers/aiController.js";
 
 const router = express.Router();
 
-// POST /api/ai/generate
-router.post("/generate", generateAIResume);
+router.post("/generate", generateResume);
 
 export default router;

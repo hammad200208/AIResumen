@@ -1,17 +1,17 @@
-import { generateFromHuggingFace } from "../services/huggingFaceService.js";
+// controllers/aiController.js
+import { generateResumeText } from "../services/huggingFaceService.js";
 
-export const generateAIResume = async (req, res) => {
-  try {
-    const { prompt } = req.body;
+export async function generateResume(req, res) {
+  const { prompt } = req.body;
 
-    if (!prompt) {
-      return res.status(400).json({ success: false, message: "Prompt is required" });
-    }
-
-    const aiResponse = await generateFromHuggingFace(prompt);
-    res.status(200).json({ success: true, data: aiResponse });
-  } catch (error) {
-    console.error("AI generation error:", error.message);
-    res.status(500).json({ success: false, message: "AI generation failed" });
+  if (!prompt) {
+    return res.status(400).json({ error: "Prompt is required." });
   }
-};
+
+  try {
+    const aiResponse = await generateResumeText(prompt);
+    res.status(200).json({ success: true, text: aiResponse });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+}

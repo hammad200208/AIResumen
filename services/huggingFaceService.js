@@ -1,28 +1,24 @@
-import axios from "axios";
 import dotenv from "dotenv";
-
 dotenv.config();
+import OpenAI from "openai";
 
-const API_URL = `https://api-inference.huggingface.co/models/${process.env.HUGGINGFACE_MODEL}`;
+const client = new OpenAI({
+  baseURL: "https://router.huggingface.co/v1",
+  apiKey: process.env.HUGGINGFACE_API_KEY,
+});
 
-export const generateFromHuggingFace = async (prompt) => {
+export async function generateResumeText(prompt) {
   try {
-    const response = await axios.post(
-      API_URL,
-      { inputs: prompt },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-        },
-      }
-    );
+    const completion = await client.chat.completions.create({
+      model: "meta-llama/Meta-Llama-3-8B-Instruct",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 500,
+      temperature: 0.7,
+    });
 
-    const output =
-      response.data[0]?.generated_text || JSON.stringify(response.data);
-
-    return output;
-  } catch (err) {
-    console.error("Error from Hugging Face API:", err.response?.data || err.message);
-    throw new Error("Failed to generate response from Hugging Face");
+    return completion.choices[0].message.content;
+  } catch (error) {
+    console.error("❌ Hugging Face API error:", error.response?.data || error.message);
+    throw new Error("Failed to generate resume text.");
   }
-};
+}
