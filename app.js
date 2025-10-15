@@ -7,10 +7,18 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+// ----------------- CORS -----------------
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "https://your-frontend.vercel.app"], // add your frontend URL
+    methods: ["GET", "POST"],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
-// Root route for Vercel / health check
+// Root route for health check
 app.get("/", (req, res) => {
   res.send("✅ Resume backend is running!");
 });
