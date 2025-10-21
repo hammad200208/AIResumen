@@ -10,23 +10,37 @@ dotenv.config();
 
 const app = express();
 
-// ----------------- CORS CONFIG -----------------
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3000", // local dev
-      "https://airesume-ruddy.vercel.app", // ✅ removed trailing slash
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true,
-  })
-);
-
-// ✅ Handle preflight requests globally
-app.options("*", cors());
-
 // ----------------- MIDDLEWARE -----------------
 app.use(express.json());
+
+// ----------------- CORS -----------------
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://airesume-ruddy.vercel.app",
+];
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization"
+  );
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+
+  // Respond to preflight request
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
+  next();
+});
 
 // ----------------- MONGODB CONNECTION -----------------
 const mongoUri = process.env.MONGO_URI;
