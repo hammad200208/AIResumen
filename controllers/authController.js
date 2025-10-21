@@ -12,6 +12,7 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
+    // Check password match
     if (password !== confirmPassword) {
       return res.status(400).json({ message: "Passwords do not match" });
     }
@@ -34,8 +35,16 @@ export const registerUser = async (req, res) => {
 
     await newUser.save();
 
+    // Generate JWT
+    const token = jwt.sign(
+      { id: newUser._id, email: newUser.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
     res.status(201).json({
       message: "User registered successfully",
+      token,
       user: {
         id: newUser._id,
         fullName: newUser.fullName,
@@ -43,8 +52,8 @@ export const registerUser = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Registration error:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("❌ Registration error:", error);
+    res.status(500).json({ message: "Server error during registration" });
   }
 };
 
@@ -53,14 +62,22 @@ export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Validate inputs
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
+
     // Check if user exists
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-    // Check password
+    // Check password validity
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid)
-      return res.status(400).json({ message: "Invalid credentials" });
+    if (!isPasswordValid) {
+      return res.status(400).json({ message: "Invalid email or password" });
+    }
 
     // Generate JWT
     const token = jwt.sign(
@@ -79,7 +96,7 @@ export const loginUser = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("❌ Login error:", error);
+    res.status(500).json({ message: "Server error during login" });
   }
 };
