@@ -15,7 +15,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",          // local development
-      "https://airesume-ruddy.vercel.app", // your deployed frontend
+      "https://airesume-ruddy.vercel.app/", // your deployed frontend
     ],
     methods: ["GET", "POST"],
     credentials: true,
