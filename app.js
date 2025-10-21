@@ -1,10 +1,10 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import mongoose from "mongoose";            // << added
+import mongoose from "mongoose";
 import aiRoutes from "./routes/aiRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
-import { verifyToken } from "./middleware/authMiddleware.js"; // for protected routes
+import { verifyToken } from "./middleware/authMiddleware.js";
 
 dotenv.config();
 
@@ -14,13 +14,16 @@ const app = express();
 app.use(
   cors({
     origin: [
-      "http://localhost:3000",          // local development
-      "https://airesume-ruddy.vercel.app", // your deployed frontend
+      "http://localhost:3000", // local dev
+      "https://airesume-ruddy.vercel.app", // ✅ removed trailing slash
     ],
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
   })
 );
+
+// ✅ Handle preflight requests globally
+app.options("*", cors());
 
 // ----------------- MIDDLEWARE -----------------
 app.use(express.json());
@@ -38,14 +41,11 @@ if (!mongoUri) {
 
 // ----------------- ROOT / HEALTH CHECK -----------------
 app.get("/", (req, res) => {
-  res.send("✅ Resume backend is running and (attempted) MongoDB connection");
+  res.send("✅ Resume backend running with proper CORS");
 });
 
 // ----------------- ROUTES -----------------
-// Auth routes (signup, login)
 app.use("/api/auth", authRoutes);
-
-// AI routes (protected, requires JWT)
 app.use("/api/ai", verifyToken, aiRoutes);
 
 export default app;
